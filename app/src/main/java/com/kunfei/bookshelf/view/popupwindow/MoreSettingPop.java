@@ -37,6 +37,8 @@ public class MoreSettingPop extends FrameLayout {
     Switch sbShowTimeBattery;
     @BindView(R.id.sb_hideStatusBar)
     Switch sbHideStatusBar;
+    @BindView(R.id.sb_to_lh)
+    Switch sbToLh;
     @BindView(R.id.ll_hideStatusBar)
     LinearLayout llHideStatusBar;
     @BindView(R.id.ll_showTimeBattery)
@@ -77,6 +79,8 @@ public class MoreSettingPop extends FrameLayout {
     ATESwitch sbImmersionStatusBar;
     @BindView(R.id.llImmersionStatusBar)
     LinearLayout llImmersionStatusBar;
+    @BindView(R.id.sb_select_text)
+    Switch switchSelectText;
 
     private Context context;
     private ReadBookControl readBookControl = ReadBookControl.getInstance();
@@ -124,6 +128,12 @@ public class MoreSettingPop extends FrameLayout {
         sbHideStatusBar.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (buttonView.isPressed()) {
                 readBookControl.setHideStatusBar(isChecked);
+                callback.recreate();
+            }
+        });
+        sbToLh.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (buttonView.isPressed()) {
+                readBookControl.setToLh(isChecked);
                 callback.recreate();
             }
         });
@@ -227,6 +237,11 @@ public class MoreSettingPop extends FrameLayout {
             dialog.show();
             ATH.setAlertDialogTint(dialog);
         });
+        switchSelectText.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (buttonView.isPressed()) {
+                readBookControl.setCanSelectText(isChecked);
+            }
+        });
     }
 
     private void initData() {
@@ -238,20 +253,24 @@ public class MoreSettingPop extends FrameLayout {
         swVolumeNextPage.setChecked(readBookControl.getCanKeyTurn());
         swReadAloudKey.setChecked(readBookControl.getAloudCanKeyTurn());
         sbHideStatusBar.setChecked(readBookControl.getHideStatusBar());
+        sbToLh.setChecked(readBookControl.getToLh());
         sbHideNavigationBar.setChecked(readBookControl.getHideNavigationBar());
         sbClick.setChecked(readBookControl.getCanClickTurn());
         sbClickAllNext.setChecked(readBookControl.getClickAllNext());
         sbShowTitle.setChecked(readBookControl.getShowTitle());
         sbShowTimeBattery.setChecked(readBookControl.getShowTimeBattery());
         sbShowLine.setChecked(readBookControl.getShowLine());
+        switchSelectText.setChecked(readBookControl.isCanSelectText());
         upView();
     }
 
     private void upView() {
         if (readBookControl.getHideStatusBar()) {
             sbShowTimeBattery.setEnabled(true);
+            sbToLh.setEnabled(true);
         } else {
             sbShowTimeBattery.setEnabled(false);
+            sbToLh.setEnabled(false);
         }
         if (readBookControl.getCanKeyTurn()) {
             swReadAloudKey.setEnabled(true);

@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,6 +41,8 @@ import com.kunfei.bookshelf.widget.modialog.InputDialog;
 import com.kunfei.bookshelf.widget.modialog.MoDialogHUD;
 import com.kunfei.bookshelf.widget.modialog.ReplaceRuleDialog;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -106,6 +109,7 @@ public class ReplaceRuleActivity extends MBaseActivity<ReplaceRuleContract.Prese
 
     private void initRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayout.VERTICAL));
         adapter = new ReplaceRuleAdapter(this);
         recyclerView.setAdapter(adapter);
         ItemTouchCallback itemTouchCallback = new ItemTouchCallback();
@@ -186,14 +190,27 @@ public class ReplaceRuleActivity extends MBaseActivity<ReplaceRuleContract.Prese
                 break;
             case R.id.action_import_onLine:
                 String cacheUrl = ACache.get(this).getAsString("replaceUrl");
+                String[] cacheUrls = cacheUrl == null ? new String[]{} : cacheUrl.split(";");
+                List<String> urlList = new ArrayList<>(Arrays.asList(cacheUrls));
                 InputDialog.builder(this)
                         .setTitle(getString(R.string.input_replace_url))
                         .setDefaultValue(cacheUrl)
-                        .setAdapterValues(new String[]{cacheUrl})
-                        .setCallback(inputText -> {
-                            inputText = StringUtils.trim(inputText);
-                            ACache.get(this).put("replaceUrl", inputText);
-                            mPresenter.importDataS(inputText);
+                        .setAdapterValues(urlList)
+                        .setCallback(new InputDialog.Callback() {
+                            @Override
+                            public void setInputText(String inputText) {
+                                inputText = StringUtils.trim(inputText);
+                                if (!urlList.contains(inputText)) {
+                                    urlList.add(0, inputText);
+                                    ACache.get(ReplaceRuleActivity.this).put("replaceUrl", TextUtils.join(";", urlList));
+                                }
+                                mPresenter.importDataS(inputText);
+                            }
+
+                            @Override
+                            public void delete(String value) {
+
+                            }
                         }).show();
                 break;
             case R.id.action_del_all:

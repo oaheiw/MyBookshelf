@@ -13,6 +13,7 @@ import com.kunfei.bookshelf.utils.UrlEncoderUtils;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +40,7 @@ public class AnalyzeUrl {
     private String host;
     private String urlPath;
     private String queryStr;
-    private Map<String, String> queryMap = new HashMap<>();
+    private Map<String, String> queryMap = new LinkedHashMap<>();
     private Map<String, String> headerMap = new HashMap<>();
     private String charCode = null;
     private UrlMode urlMode = UrlMode.DEFAULT;
@@ -57,19 +58,19 @@ public class AnalyzeUrl {
         if (!TextUtils.isEmpty(baseUrl)) {
             this.baseUrl = headerPattern.matcher(baseUrl).replaceAll("");
         }
-        //解析Header
-        ruleUrl = analyzeHeader(ruleUrl, headerMapF);
         //替换关键字
         if (!StringUtils.isTrimEmpty(key)) {
             ruleUrl = ruleUrl.replace("searchKey", key);
         }
-        //分离编码规则
-        ruleUrl = splitCharCode(ruleUrl);
         //判断是否有下一页
         if (page != null && page > 1 && !ruleUrl.contains("searchPage"))
             throw new Exception("没有下一页");
         //替换js
         ruleUrl = replaceJs(ruleUrl, baseUrl, page, key);
+        //解析Header
+        ruleUrl = analyzeHeader(ruleUrl, headerMapF);
+        //分离编码规则
+        ruleUrl = splitCharCode(ruleUrl);
         //设置页数
         ruleUrl = analyzePage(ruleUrl, page);
         //执行规则列表
@@ -77,6 +78,9 @@ public class AnalyzeUrl {
         for (String rule : ruleList) {
             if (rule.startsWith("<js>")) {
                 rule = rule.substring(4, rule.lastIndexOf("<"));
+                ruleUrl = (String) evalJS(rule, ruleUrl);
+            } else if (rule.startsWith("@js:")) {
+                rule = rule.substring(4);
                 ruleUrl = (String) evalJS(rule, ruleUrl);
             } else {
                 ruleUrl = rule.replace("@result", ruleUrl);
